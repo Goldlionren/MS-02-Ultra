@@ -18,6 +18,30 @@ Due to Intel SKU restrictions, only systems with the 285HX CPU support ECC memor
 | 275HX     | ❌           | 256 GB           | ✅      |
 | 235HX     | ❌           | 256 GB           | ✅      |
 
+### Linux: reading ECC error counts (EDAC)
+
+On the 285HX, ECC correction works in hardware as soon as ECC SODIMMs are
+installed (BIOS reports Single-bit ECC). However, as of July 2026 the mainline
+Linux kernel has no EDAC driver for the Arrow Lake-HX memory controller
+(host bridge PCI ID `8086:7d1c`), so corrected/uncorrected error *counts* are
+not visible under `/sys/devices/system/edac/` on a stock kernel.
+
+A community out-of-tree driver validated on the MS-02 Ultra (285HX, dual ECC
+SODIMM) is available, including a read-only register prober you can run first
+to confirm your configuration decodes correctly:
+
+- https://github.com/zs311521/edac-arl-hx
+
+After loading it:
+
+```
+ls /sys/devices/system/edac/mc/          # expect mc0 mc1
+cat /sys/devices/system/edac/mc/mc*/ce_count
+```
+
+Note: ECC operation itself does not depend on this driver; it only adds
+error-count visibility for monitoring.
+
 ## Memory Frequency
 
 ### Important when using 2 DIMMs
